@@ -9,9 +9,14 @@ XBOXRECV Xbox(&Usb); //Create wireless XBOX360 controller instance on the USB po
 boolean last_connected;
 boolean last_disabled;
 boolean disabled;
+int left_stick_y;
+int right_stick_y;
 int left_speed;
+int right_speed;
 const int LEFT_PWM = 6;
 const int RIGHT_PWM = 5;
+const int DEADZONE_L = 4000;
+const int DEADZONE_R = 1500;
 
 void setup() {
   Serial.begin(9600);
@@ -24,7 +29,10 @@ void setup() {
   last_connected = false;
   last_disabled = false;
   disabled = true;
-  left_speed = 0;
+  left_speed = 127;
+  right_speed = 127;
+  analogWrite(LEFT_PWM,127);
+  analogWrite(RIGHT_PWM,127);
 }
 
 void loop() {
@@ -45,10 +53,26 @@ void loop() {
       }
       else {    //Robot is not disabled, let it move
         //Collect Joystick Data
-        Serial.print("Left Stick: "); Serial.print(Xbox.getAnalogHat(LeftHatY,0));
-        left_speed = map(Xbox.getAnalogHat(LeftHatY,0),-32767,32768,0,255);
-        Serial.print(" Adjusted: "); Serial.println(left_speed);
+        left_stick_y = Xbox.getAnalogHat(LeftHatY,0);
+        right_stick_y = Xbox.getAnalogHat(RightHatY,0);
+        Serial.print("Left Stick: "); Serial.print(left_stick_y);
+        //Serial.print("Right Stick: "); Serial.println(right_stick_y);
+        if(left_stick_y > -DEADZONE_L && left_stick_y < DEADZONE_L) {
+          left_speed = 127;
+        }
+        else {
+          left_speed = map(left_stick_y,-32767,32768,0,255);
+        }
+        if(right_stick_y > -DEADZONE_R && right_stick_y < DEADZONE_R) {
+          right_speed = 127;
+        }
+        else {
+          right_speed = map(right_stick_y,-32767,32768,0,255);
+        }
+        Serial.print(" | Adjusted Left: "); Serial.println(left_speed);
+      //  Serial.print(" Adjusted Right: "); Serial.println(right_speed);
         analogWrite(LEFT_PWM,left_speed);
+        analogWrite(RIGHT_PWM,right_speed);
       }
       last_disabled = disabled;
       if(Xbox.getButtonClick(START, 0) /*&& Xbox.getButtonClick(R1, 0)*/) {
@@ -68,6 +92,5 @@ void loop() {
       }
     }
   }
-
   delay(50);
 }
