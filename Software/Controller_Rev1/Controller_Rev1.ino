@@ -9,6 +9,7 @@ XBOXRECV Xbox(&Usb); //Create wireless XBOX360 controller instance on the USB po
 boolean last_connected;
 boolean last_disabled;
 boolean disabled;
+boolean half_speed;
 int left_speed;
 const int LEFT_PWM = 6;
 const int RIGHT_PWM = 5;
@@ -24,6 +25,7 @@ void setup() {
   last_connected = false;
   last_disabled = false;
   disabled = true;
+  half_speed = true;
   left_speed = 0;
 }
 
@@ -37,7 +39,7 @@ void loop() {
         last_connected = !last_connected;
       }
       if(disabled) {  //If the robot is disabled don't do anything
-        if(last_disabled != disabled) {
+        if(last_disabled != disabled) {   //So we arent constantly writing these values
           Xbox.setLedMode(ALTERNATING, 0);
           analogWrite(LEFT_PWM,127);
           analogWrite(RIGHT_PWM,127);
