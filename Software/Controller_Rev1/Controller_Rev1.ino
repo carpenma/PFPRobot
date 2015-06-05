@@ -14,14 +14,20 @@ int left_stick_y;
 int right_stick_y;
 int left_speed;
 int right_speed;
-const int LEFT_PWM = 6;
+const int LEFT_PWM = 3;
 const int RIGHT_PWM = 5;
 const int DEADZONE_L = 4000;
 const int DEADZONE_R = 1500;
 
+Servo leftSide;
+Servo rightSide;
+
 void setup() {
+  //Set the PWM frequency to be 122Hz
+  TCCR1B = TCCR1B & 0b11111000 | 0x04;
   Serial.begin(9600);
-  //pinMode(11,OUTPUT);
+  pinMode(LEFT_PWM,OUTPUT);
+  pinMode(RIGHT_PWM,OUTPUT);
   if(Usb.Init() == -1) {
     Serial.print("Error starting wireless receiver library!");
     while (1);
@@ -51,6 +57,8 @@ void loop() {
           Xbox.setLedMode(ALTERNATING, 0);
           analogWrite(LEFT_PWM,127);
           analogWrite(RIGHT_PWM,127);
+          leftSide.detach(leftPWM);
+          rightSide.detach(rightPWM);
         }
       }
       else {    //Robot is not disabled, let it move
