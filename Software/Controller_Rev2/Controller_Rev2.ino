@@ -14,10 +14,10 @@ Servo rightSide;
 
 boolean isEnabled;
 boolean last_connected;
-const int LEFT_PWM = 9;
-const int RIGHT_PWM = 10;
-const int DEADZONE_L = 0;
-const int DEADZONE_R = 0;
+const int LEFT_PWM = 3;
+const int RIGHT_PWM = 4;
+const int DEADZONE_L = 10;
+const int DEADZONE_R = 10;
 const unsigned long TIMEOUT = 500;  // Time allowed between commands (in ms) before the robot automatically disables
 
 int leftStick_Y;
@@ -51,7 +51,7 @@ void loop() {
       //delay(50);
       //Serial.println(millis() - lastData);
       if(isEnabled && millis() - lastData <= TIMEOUT && millis() > 500) {
-        Serial.println("Running Robot!");
+        //Serial.println("Running Robot!");
         runRobot();
       }
       else {
@@ -72,7 +72,7 @@ void loop() {
   else {
     Serial.println("Error: No Receiver!");
     disable();  // Lost contact with receiver
-    delay(1000);
+    delay(500);
   }
   last_connected = Xbox.Xbox360Connected[0];
 }
@@ -126,6 +126,7 @@ void moveRobot() {
     rightSpeed = 90;
   }
 
+  Serial.print("Writing to Jags: Left: "); Serial.print(leftSpeed); Serial.print(" | Right: "); Serial.println(rightSpeed);
   leftSide.write(leftSpeed);
   rightSide.write(rightSpeed);
 }
