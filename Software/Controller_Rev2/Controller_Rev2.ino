@@ -31,52 +31,54 @@ void setup() {
   Serial.begin(9600);
   isEnabled = FALSE;  //Robot starts disabled for safety
 
+  wdt_enable(WDTO_1S);  // 1 Second watcdog timeout
+
   if(Usb.Init() == -1) {
     Serial.print("Error starting wireless receiver library!");
-    while (1);
+    while (1);  // Wait here for watchdog to catch us
   }
   Serial.println("Wireless receiver library loaded successfuly!");
-  delay(250);
+
   int leftSpeed = 90;
   int rightSpeed = 90;
 
-  wdt_enable(WDTO_1S);  // 1 Second watcdog timeout
+  wdt_reset();
   lastData = millis();
 }
 
 void loop() {
   Usb.Task();
-  if (Xbox.XboxReceiverConnected) {
-    if (Xbox.Xbox360Connected[0]) {
-      if(!last_connected) Serial.println("Controller Connected!");
-      //Serial.print("isEnabled: "); Serial.println(isEnabled);
-      //delay(50);
-      //Serial.println(millis() - lastData);
-      if(isEnabled && millis() - lastData <= TIMEOUT && millis() > 500) {
-        //Serial.println("Running Robot!");
-        runRobot();
-      }
+  if(millis() - lastData > 300) { // Allow the controller to spin (while still feeding watchdog) to allow Xbox receiver to initialize
+    if (Xbox.XboxReceiverConnected) {
+      if (Xbox.Xbox360Connected[0]) {
+        if(!last_connected) Serial.println("Controller Connected!");
+        //Serial.print("isEnabled: "); Serial.println(isEnabled);
+        //delay(50);
+        //Serial.println(millis() - lastData);
+        if(isEnabled && millis() - lastData <= TIMEOUT && millis() > 500) {
+          //Serial.println("Running Robot!");
+          runRobot();
+        }
+        else {
+          disable();
+        }
+        if(Xbox.getButtonClick(START, 0)) {
+          //Serial.println("Start Button Detected!");
+          if(isEnabled) disable();
+          else enable();
+        }
+      } // End missing controller case
       else {
-        disable();
+        Serial.println("Error: No Controller!");
+        disable(); // Lost contact with controller
       }
-      if(Xbox.getButtonClick(START, 0)) {
-        //Serial.println("Start Button Detected!");
-        if(isEnabled) disable();
-        else enable();
-      }
-    }
+    } // End missing receiver case
     else {
-      Serial.println("Error: No Controller!");
-      disable(); // Lost contact with controller
-      //delay(250);
+      Serial.println("Error: No Receiver!");
+      disable();  // Lost contact with receiver
     }
-  }
-  else {
-    Serial.println("Error: No Receiver!");
-    disable();  // Lost contact with receiver
-    //delay(250);
-  }
-  last_connected = Xbox.Xbox360Connected[0];
+    last_connected = Xbox.Xbox360Connected[0];
+  } // End Xbox initialization waiting case
   wdt_reset();  //Feed the watchdog
 }
 
