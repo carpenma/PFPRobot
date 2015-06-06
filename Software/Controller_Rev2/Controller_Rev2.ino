@@ -1,6 +1,7 @@
 #include <Servo.h>
 #include <SPI.h>
 #include <XBOXRECV.h>
+#include <avr/wdt.h>
 
 #define FALSE 0
 #define TRUE 1
@@ -39,6 +40,7 @@ void setup() {
   int leftSpeed = 90;
   int rightSpeed = 90;
 
+  wdt_enable(WDTO_1S);  // 1 Second watcdog timeout
   lastData = millis();
 }
 
@@ -66,15 +68,16 @@ void loop() {
     else {
       Serial.println("Error: No Controller!");
       disable(); // Lost contact with controller
-      delay(500);
+      //delay(250);
     }
   }
   else {
     Serial.println("Error: No Receiver!");
     disable();  // Lost contact with receiver
-    delay(500);
+    //delay(250);
   }
   last_connected = Xbox.Xbox360Connected[0];
+  wdt_reset();  //Feed the watchdog
 }
 
 void enable() {
@@ -83,7 +86,6 @@ void enable() {
   rightSide.attach(RIGHT_PWM);
 
   if(!isEnabled && Xbox.XboxReceiverConnected && Xbox.Xbox360Connected[0]) {
-    //Serial.println("Enabled Transition!");
     Xbox.setLedOn(LED1,0);  //May change this so that different LEDs come on for different speeds/modes etc.
     Xbox.setRumbleOn(60000,60000,0);
     delay(200);
@@ -98,7 +100,6 @@ void disable() {
   rightSide.detach();
 
   if(isEnabled && Xbox.XboxReceiverConnected && Xbox.Xbox360Connected[0]) {
-    //Serial.println("Disabled Transition!");
     Xbox.setLedMode(ALTERNATING, 0);
     Xbox.setRumbleOn(60000,60000,0);
     delay(200);
@@ -126,7 +127,7 @@ void moveRobot() {
     rightSpeed = 90;
   }
 
-  Serial.print("Writing to Jags: Left: "); Serial.print(leftSpeed); Serial.print(" | Right: "); Serial.println(rightSpeed);
+  //Serial.print("Writing to Jags: Left: "); Serial.print(leftSpeed); Serial.print(" | Right: "); Serial.println(rightSpeed);
   leftSide.write(leftSpeed);
   rightSide.write(rightSpeed);
 }
