@@ -28,7 +28,7 @@ int rightSpeed;
 unsigned long lastData;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   isEnabled = FALSE;  //Robot starts disabled for safety
 
   wdt_enable(WDTO_1S);  // 1 Second watcdog timeout
@@ -48,7 +48,7 @@ void setup() {
 
 void loop() {
   Usb.Task();
-  if(millis() - lastData > 300) { // Allow the controller to spin (while still feeding watchdog) to allow Xbox receiver to initialize
+  if(millis() - lastData > 300) { // Allow the microcontroller to spin (while still feeding watchdog) to allow Xbox receiver to initialize
     if (Xbox.XboxReceiverConnected) {
       if (Xbox.Xbox360Connected[0]) {
         if(!last_connected) Serial.println("Controller Connected!");
@@ -63,16 +63,15 @@ void loop() {
           disable();
         }
         if(Xbox.getButtonClick(START, 0)) {
-          //Serial.println("Start Button Detected!");
           if(isEnabled) disable();
           else enable();
         }
-      } // End missing controller case
+      } // End controller connected case
       else {
         Serial.println("Error: No Controller!");
         disable(); // Lost contact with controller
       }
-    } // End missing receiver case
+    } // End receiver connected case
     else {
       Serial.println("Error: No Receiver!");
       disable();  // Lost contact with receiver
@@ -102,7 +101,7 @@ void disable() {
   rightSide.detach();
 
   if(isEnabled && Xbox.XboxReceiverConnected && Xbox.Xbox360Connected[0]) {
-    Xbox.setLedMode(ALTERNATING, 0);
+    Xbox.setLedBlink(ALL,0);
     Xbox.setRumbleOn(60000,60000,0);
     delay(200);
     Xbox.setRumbleOff(0);
@@ -112,6 +111,7 @@ void disable() {
 }
 
 void runRobot() {
+  Xbox.setLedOn(LED1,0);  // Because the controller needs to be reminded periodically how the LEDs should look for some reason..
   getData();
   moveRobot();
 }
