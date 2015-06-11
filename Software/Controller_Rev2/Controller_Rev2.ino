@@ -15,8 +15,8 @@ Servo rightSide;
 
 boolean isEnabled;
 boolean last_connected;
-const int LEFT_PWM = 3;
-const int RIGHT_PWM = 4;
+const int LEFT_PWM = 2;
+const int RIGHT_PWM = 3;
 const int DEADZONE_L = 10;
 const int DEADZONE_R = 10;
 const unsigned long TIMEOUT = 500;  // Time allowed between commands (in ms) before the robot automatically disables
