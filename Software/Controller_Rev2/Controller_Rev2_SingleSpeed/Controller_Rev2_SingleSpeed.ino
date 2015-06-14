@@ -82,12 +82,11 @@ void loop() {
 }
 
 void enable() {
-  //Serial.print("Enabling! - "); Serial.println(isEnabled);
   leftSide.attach(LEFT_PWM);
   rightSide.attach(RIGHT_PWM);
 
   if(!isEnabled && Xbox.XboxReceiverConnected && Xbox.Xbox360Connected[0]) {
-    Xbox.setLedOn(LED1,0);  //May change this so that different LEDs come on for different speeds/modes etc.
+    Xbox.setLedOn(LED1,0);
     Xbox.setRumbleOn(60000,60000,0);
     delay(200);
     Xbox.setRumbleOff(0);

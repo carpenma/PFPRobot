@@ -15,6 +15,7 @@ Servo rightSide;
 
 boolean isEnabled;
 boolean last_connected;
+boolean fullSpeed;
 const int LEFT_PWM = 2;
 const int RIGHT_PWM = 3;
 const int DEADZONE_L = 10;
@@ -30,6 +31,7 @@ unsigned long lastData;
 void setup() {
   Serial.begin(115200);
   isEnabled = FALSE;  //Robot starts disabled for safety
+  fullSpeed = FALSE; // Also a safety precaution, robot starts in half-speed mode
 
   wdt_enable(WDTO_1S);  // 1 Second watcdog timeout
 
@@ -52,11 +54,12 @@ void loop() {
     if (Xbox.XboxReceiverConnected) {
       if (Xbox.Xbox360Connected[0]) {
         if(!last_connected) Serial.println("Controller Connected!");
-        //Serial.print("isEnabled: "); Serial.println(isEnabled);
-        //delay(50);
-        //Serial.println(millis() - lastData);
         if(isEnabled && millis() - lastData <= TIMEOUT && millis() > 500) {
-          //Serial.println("Running Robot!");
+          if(Xbox.getButtonClick(BACK, 0)) {  // Check if buttons are clicked to toggle the speed mode and flip it if so
+            fullSpeed = !fullSpeed;
+            if (fullSpeed) Xbox.setLedOn(LED2,0);
+            else Xbox.setLedOn(LED1,0);
+          } // End change drive speed case
           runRobot();
         }
         else {
@@ -67,14 +70,14 @@ void loop() {
           else enable();
         }
       } // End controller connected case
-      else {
+      else {  // Lost contact with controller
         Serial.println("Error: No Controller!");
-        disable(); // Lost contact with controller
+        disable();
       }
     } // End receiver connected case
-    else {
+    else {  // Lost contact with receiver
       Serial.println("Error: No Receiver!");
-      disable();  // Lost contact with receiver
+      disable();
     }
     last_connected = Xbox.Xbox360Connected[0];
   } // End Xbox initialization waiting case
@@ -82,12 +85,13 @@ void loop() {
 }
 
 void enable() {
-  //Serial.print("Enabling! - "); Serial.println(isEnabled);
+  fullSpeed = FALSE;  // Whenever the robot is enabled it starts in half-speed mode
   leftSide.attach(LEFT_PWM);
   rightSide.attach(RIGHT_PWM);
 
   if(!isEnabled && Xbox.XboxReceiverConnected && Xbox.Xbox360Connected[0]) {
-    Xbox.setLedOn(LED1,0);  //May change this so that different LEDs come on for different speeds/modes etc.
+    if (fullSpeed) Xbox.setLedOn(LED2,0);
+    else Xbox.setLedOn(LED1,0);
     Xbox.setRumbleOn(60000,60000,0);
     delay(200);
     Xbox.setRumbleOff(0);
@@ -107,11 +111,11 @@ void disable() {
     Xbox.setRumbleOff(0);
   }
   isEnabled = FALSE;
+  fullSpeed = FALSE;
   lastData = millis();
 }
 
 void runRobot() {
-  Xbox.setLedOn(LED1,0);  // Because the controller needs to be reminded periodically how the LEDs should look for some reason..
   getData();
   moveRobot();
 }
@@ -119,8 +123,14 @@ void runRobot() {
 // Y Axis = Up/Down
 // X Axis = Left/Right
 void moveRobot() {
-  leftSpeed = map(leftStick_Y,-32767,32768,0,180);
-  rightSpeed = map(rightStick_Y,-32767,32768,0,180);
+  if (fullSpeed) {
+    leftSpeed = map(leftStick_Y,-32767,32768,0,180);
+    rightSpeed = map(rightStick_Y,-32767,32768,0,180);
+  }
+  else {  // Only use the middle of the speed range
+    leftSpeed = map(leftStick_Y,-32767,32768,45,135);
+    rightSpeed = map(rightStick_Y,-32767,32768,45,135);
+  }
 
   if (leftSpeed <= (90 + DEADZONE_L) & leftSpeed >= (90 - DEADZONE_L)) {
     leftSpeed = 90;
