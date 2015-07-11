@@ -53,7 +53,6 @@ void setup() {
 
   wdt_reset();
   Serial.println("=== PFP Robot Code v2.0 Single Speed Variant ===");
-  //wdt_reset();
   lastData = millis();
 }
 
