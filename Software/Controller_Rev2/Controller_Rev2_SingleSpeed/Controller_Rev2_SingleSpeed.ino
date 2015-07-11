@@ -1,4 +1,5 @@
-/*  Purdue FIRST Programs - Purdue University
+/*  PFP Promotional Robot Code v2.0 Single Speed
+    Purdue FIRST Programs - Purdue University
     This program is designed to take input from a wireless XBox controller, convert it to servo speeds and
     output it via PWM to control the PFP promotional robot.  Note that this code version only supports one
     speed setting.
@@ -51,7 +52,7 @@ void setup() {
   int rightSpeed = 90;
 
   wdt_reset();
-  Serial.println("=== PFP Robot Code v2.0 Single Speed Variant ===")
+  Serial.println("=== PFP Robot Code v2.0 Single Speed Variant ===");
   //wdt_reset();
   lastData = millis();
 }
@@ -88,7 +89,7 @@ void loop() {
 }
 
 void enable() {
-  Serial.println("Enabling!");
+  if(!isEnabled) Serial.println("Enabling!");
   leftSide.attach(LEFT_PWM);
   rightSide.attach(RIGHT_PWM);
 
@@ -102,7 +103,7 @@ void enable() {
 }
 
 void disable() {
-  Serial.print("Disabling!");
+  if(isEnabled) Serial.print("Disabling!");
   leftSide.detach();
   rightSide.detach();
 
