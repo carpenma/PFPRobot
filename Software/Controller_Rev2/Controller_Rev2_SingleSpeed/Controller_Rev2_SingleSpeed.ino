@@ -1,3 +1,10 @@
+/*  Purdue FIRST Programs - Purdue University
+    This program is designed to take input from a wireless XBox controller, convert it to servo speeds and
+    output it via PWM to control the PFP promotional robot.  Note that this code version only supports one
+    speed setting.
+
+    For assistance contact Matt Carpenter carpenma@gmail.com
+*/
 #include <Servo.h>
 #include <SPI.h>
 #include <XBOXRECV.h>
@@ -15,9 +22,9 @@ Servo rightSide;
 
 boolean isEnabled;
 boolean last_connected;
-const int LEFT_PWM = 2;
+const int LEFT_PWM = 2;     // Pin declarations for left and right PWM outputs
 const int RIGHT_PWM = 3;
-const int DEADZONE_L = 10;
+const int DEADZONE_L = 10;  // Range of values (+/-) on the controller which will translate to centered
 const int DEADZONE_R = 10;
 const unsigned long TIMEOUT = 500;  // Time allowed between commands (in ms) before the robot automatically disables
 
@@ -31,6 +38,7 @@ void setup() {
   Serial.begin(115200);
   isEnabled = FALSE;  //Robot starts disabled for safety
 
+  Serial.println("Initializing...");
   wdt_enable(WDTO_1S);  // 1 Second watcdog timeout
 
   if(Usb.Init() == -1) {
@@ -43,20 +51,18 @@ void setup() {
   int rightSpeed = 90;
 
   wdt_reset();
+  Serial.println("=== PFP Robot Code v2.0 Single Speed Variant ===")
+  //wdt_reset();
   lastData = millis();
 }
 
 void loop() {
   Usb.Task();
   if(millis() - lastData > 300) { // Allow the microcontroller to spin (while still feeding watchdog) to allow Xbox receiver to initialize
-    if (Xbox.XboxReceiverConnected) {
-      if (Xbox.Xbox360Connected[0]) {
+    if (Xbox.XboxReceiverConnected) {   // The wireless receiver was found
+      if (Xbox.Xbox360Connected[0]) {   // Controller connected to the receiver
         if(!last_connected) Serial.println("Controller Connected!");
-        //Serial.print("isEnabled: "); Serial.println(isEnabled);
-        //delay(50);
-        //Serial.println(millis() - lastData);
         if(isEnabled && millis() - lastData <= TIMEOUT && millis() > 500) {
-          //Serial.println("Running Robot!");
           runRobot();
         }
         else {
@@ -67,14 +73,14 @@ void loop() {
           else enable();
         }
       } // End controller connected case
-      else {
+      else {  // Lost contact with controller
         Serial.println("Error: No Controller!");
-        disable(); // Lost contact with controller
+        disable();
       }
     } // End receiver connected case
-    else {
+    else {  // Lost contact with receiver
       Serial.println("Error: No Receiver!");
-      disable();  // Lost contact with receiver
+      disable();
     }
     last_connected = Xbox.Xbox360Connected[0];
   } // End Xbox initialization waiting case
@@ -82,6 +88,7 @@ void loop() {
 }
 
 void enable() {
+  Serial.println("Enabling!");
   leftSide.attach(LEFT_PWM);
   rightSide.attach(RIGHT_PWM);
 
@@ -95,7 +102,7 @@ void enable() {
 }
 
 void disable() {
-  //Serial.print("Disabling! - "); Serial.println(isEnabled);
+  Serial.print("Disabling!");
   leftSide.detach();
   rightSide.detach();
 
@@ -128,7 +135,6 @@ void moveRobot() {
     rightSpeed = 90;
   }
 
-  //Serial.print("Writing to Jags: Left: "); Serial.print(leftSpeed); Serial.print(" | Right: "); Serial.println(rightSpeed);
   leftSide.write(leftSpeed);
   rightSide.write(rightSpeed);
 }
