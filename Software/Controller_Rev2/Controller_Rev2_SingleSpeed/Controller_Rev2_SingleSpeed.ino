@@ -23,8 +23,8 @@ Servo rightSide;
 
 boolean isEnabled;
 boolean last_connected;
-const int LEFT_PWM = 2;     // Pin declarations for left and right PWM outputs
-const int RIGHT_PWM = 3;
+const int LEFT_PWM = 4;     // Pin declarations for left and right PWM outputs
+const int RIGHT_PWM = 5;
 const int DEADZONE_L = 10;  // Range of values (+/-) on the controller which will translate to centered
 const int DEADZONE_R = 10;
 const unsigned long TIMEOUT = 500;  // Time allowed between commands (in ms) before the robot automatically disables
