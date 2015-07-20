@@ -93,7 +93,7 @@ void enable() {
   rightSide.attach(RIGHT_PWM);
 
   if(!isEnabled && Xbox.XboxReceiverConnected && Xbox.Xbox360Connected[0]) {
-    Xbox.setLedOn(LED1,0);
+    Xbox.setLedOn(LED2,0);
     Xbox.setRumbleOn(60000,60000,0);
     delay(200);
     Xbox.setRumbleOff(0);
